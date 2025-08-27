@@ -45,4 +45,21 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /*Các function này dùng để user truy xuất thuận tiện hơn*/
+    public function cart()
+    {
+        return $this->hasOne(\App\Models\Cart::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(\App\Models\Order::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\Review::class);
+    }
+
 }
