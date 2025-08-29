@@ -6,31 +6,32 @@ use App\Models\Category;
 
 class CategoryService
 {
-    public function getAll()
+    public function getAllCategories()
     {
-        return Category::with('books')->paginate(10);
+        return Category::all();
     }
 
-    public function getById($id)
+    public function getCategoryById($id)
     {
-        return Category::with('books')->findOrFail($id);
+        return Category::findOrFail($id);
     }
 
-    public function create(array $data)
+    public function createCategory(array $data)
     {
         return Category::create($data);
     }
 
-    public function update($id, array $data)
+    public function updateCategory($id, array $data)
     {
         $category = Category::findOrFail($id);
         $category->update($data);
         return $category;
     }
 
-    public function delete($id)
+    public function deleteCategory($id)
     {
         $category = Category::findOrFail($id);
-        return $category->delete();
+        $category->delete();
     }
 }
+
