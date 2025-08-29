@@ -9,48 +9,66 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    // Đăng ký
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:6',
-            'role' => 'in:admin,user,guest'
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
+            'name'     => $request->name,
+            'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role ?? 'guest'
+            'role'     => $request->role ?? 'user', // mặc định user
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('api_token')->plainTextToken;
 
-        return response()->json(['user' => $user, 'token' => $token], 201);
+        return response()->json([
+            'message' => 'Register successful',
+            'user'    => $user,
+            'token'   => $token,
+        ], 201);
     }
 
+    // Đăng nhập
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string'
+            'email'    => 'required|string|email',
+            'password' => 'required|string',
         ]);
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages(['email' => ['Thông tin đăng nhập không hợp lệ.']]);
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => ['The provided credentials are incorrect.'],
+            ]);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Xoá token cũ (nếu muốn mỗi user chỉ có 1 token)
+        $user->tokens()->delete();
 
-        return response()->json(['user' => $user, 'token' => $token], 200);
+        $token = $user->createToken('api_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login successful',
+            'user'    => $user,
+            'token'   => $token,
+        ]);
     }
 
+    // Đăng xuất
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
-        return response()->json(['message' => 'Đăng xuất thành công']);
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logout successful'
+        ]);
     }
 }
