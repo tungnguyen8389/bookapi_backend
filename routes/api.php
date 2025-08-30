@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ReviewController;
 
 // Auth routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -18,10 +19,13 @@ Route::get('/authors', [AuthorController::class, 'index']);
 Route::get('/authors/{id}', [AuthorController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
+Route::get('books/{bookId}/reviews', [ReviewController::class, 'index']);
 
 // User (đăng nhập mới được thêm, sửa giỏ hàng, review...)
 Route::middleware(['auth:sanctum', 'role:user,admin'])->group(function () {
-    Route::post('/books/{id}/review', [BookController::class, 'review']); // ví dụ
+    Route::post('books/{bookId}/reviews', [ReviewController::class, 'store']);
+    Route::put('reviews/{id}', [ReviewController::class, 'update']);
+    Route::delete('reviews/{id}', [ReviewController::class, 'destroy']);
 });
 
 // Admin có toàn quyền CRUD

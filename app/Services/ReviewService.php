@@ -6,31 +6,29 @@ use App\Models\Review;
 
 class ReviewService
 {
-    public function getAll()
+    public function getReviewsByBook($bookId, $perPage = 10)
     {
-        return Review::with(['user', 'book'])->get();
+        return Review::with('user')
+            ->where('book_id', $bookId)
+            ->paginate($perPage);
     }
 
-    public function getById($id)
-    {
-        return Review::with(['user', 'book'])->findOrFail($id);
-    }
-
-    public function create(array $data)
+    public function createReview($data)
     {
         return Review::create($data);
     }
 
-    public function update($id, array $data)
+    public function updateReview($id, $data)
     {
         $review = Review::findOrFail($id);
         $review->update($data);
         return $review;
     }
 
-    public function delete($id)
+    public function deleteReview($id)
     {
         $review = Review::findOrFail($id);
         return $review->delete();
     }
 }
+
