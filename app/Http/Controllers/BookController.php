@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use App\Http\Requests\StoreBookRequest;
+use App\Http\Requests\UpdateBookRequest;
 use App\Services\BookService;
 
 class BookController extends Controller
@@ -12,56 +16,48 @@ class BookController extends Controller
     public function __construct(BookService $bookService)
     {
         $this->bookService = $bookService;
+
+        // Middleware này sẽ yêu cầu đăng nhập cho mọi phương thức
+        // NGOẠI TRỪ 'index' và 'show'
+        $this->middleware('auth:sanctum')->except(['index', 'show']);
+
+        // Chỉ admin mới được thêm/sửa/xóa
+        $this->middleware('role:admin')->only(['store', 'update', 'destroy']);
     }
 
-    // GET /api/books
-    public function index()
+    // Lấy danh sách sách (có phân trang)
+    public function index(Request $request)
     {
-        $books = $this->bookService->getAll();
+        $perPage = $request->get('per_page', 10);
+        $books = $this->bookService->getAllBooks($perPage);
         return response()->json($books);
     }
 
-    // GET /api/books/{id}
+    // Xem chi tiết 1 sách
     public function show($id)
     {
-        $book = $this->bookService->getById($id);
+        $book = $this->bookService->getBookById($id);
         return response()->json($book);
     }
 
-    // POST /api/books
-    public function store(Request $request)
+    // Thêm mới
+    public function store(StoreBookRequest $request)
     {
-        $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'author_id' => 'required|exists:authors,id',
-            'category_id' => 'required|exists:categories,id',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
-        ]);
-
-        $book = $this->bookService->create($data);
+        $book = $this->bookService->createBook($request->validated());
         return response()->json($book, 201);
     }
 
-    // PUT /api/books/{id}
-    public function update(Request $request, $id)
+    // Cập nhật
+    public function update(UpdateBookRequest $request, $id)
     {
-        $data = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'author_id' => 'sometimes|exists:authors,id',
-            'category_id' => 'sometimes|exists:categories,id',
-            'price' => 'sometimes|numeric',
-            'stock' => 'sometimes|integer',
-        ]);
-
-        $book = $this->bookService->update($id, $data);
+        $book = $this->bookService->updateBook($id, $request->validated());
         return response()->json($book);
     }
 
-    // DELETE /api/books/{id}
+    // Xóa
     public function destroy($id)
     {
-        $this->bookService->delete($id);
-        return response()->json(['message' => 'Book deleted successfully']);
+        $this->bookService->deleteBook($id);
+        return response()->json(null, 204);
     }
 }

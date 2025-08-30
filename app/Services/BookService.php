@@ -6,36 +6,31 @@ use App\Models\Book;
 
 class BookService
 {
-    // Lấy tất cả sách (có phân trang)
-    public function getAll($perPage = 10)
+    public function getAllBooks()
     {
-        return Book::with(['author', 'category'])->paginate($perPage);
+        return Book::all();
     }
 
-    // Lấy 1 sách theo id
-    public function getById($id)
+    public function getBookById($id)
     {
-        return Book::with(['author', 'category'])->findOrFail($id);
+        return Book::findOrFail($id);
     }
 
-    // Thêm sách mới
-    public function create(array $data)
+    public function createBook(array $data)
     {
         return Book::create($data);
     }
 
-    // Cập nhật sách
-    public function update($id, array $data)
+    public function updateBook($id, array $data)
     {
         $book = Book::findOrFail($id);
         $book->update($data);
         return $book;
     }
 
-    // Xóa sách
-    public function delete($id)
+    public function deleteBook($id)
     {
         $book = Book::findOrFail($id);
-        return $book->delete();
+        $book->delete();
     }
 }

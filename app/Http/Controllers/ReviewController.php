@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Services\ReviewService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
@@ -12,48 +13,46 @@ class ReviewController extends Controller
     public function __construct(ReviewService $reviewService)
     {
         $this->reviewService = $reviewService;
+        // Chỉ bắt buộc login cho store, update, destroy
+        $this->middleware('auth:sanctum')->only(['store','update','destroy']);
     }
 
-    public function index()
+    public function index($bookId, Request $request)
     {
-        return response()->json($this->reviewService->getAll());
+        $perPage = $request->get('per_page', 10);
+        $reviews = $this->reviewService->getReviewsByBook($bookId, $perPage);
+        return response()->json($reviews);
     }
 
-    public function show($id)
-    {
-        return response()->json($this->reviewService->getById($id));
-    }
-
-    public function store(Request $request)
+    public function store(Request $request, $bookId)
     {
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'book_id' => 'required|exists:books,id',
-            'rating'  => 'required|integer|min:1|max:5',
+            'rating' => 'nullable|integer|min:1|max:5',
             'comment' => 'nullable|string',
         ]);
 
-        $review = $this->reviewService->create($data);
+        $data['user_id'] = Auth::id();
+        $data['book_id'] = $bookId;
 
+        $review = $this->reviewService->createReview($data);
         return response()->json($review, 201);
     }
 
     public function update(Request $request, $id)
     {
         $data = $request->validate([
-            'rating'  => 'sometimes|integer|min:1|max:5',
+            'rating' => 'sometimes|integer|min:1|max:5',
             'comment' => 'nullable|string',
         ]);
 
-        $review = $this->reviewService->update($id, $data);
-
+        $review = $this->reviewService->updateReview($id, $data);
         return response()->json($review);
     }
 
     public function destroy($id)
     {
-        $this->reviewService->delete($id);
-
+        $this->reviewService->deleteReview($id);
         return response()->json(null, 204);
     }
 }
+

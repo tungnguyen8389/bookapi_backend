@@ -9,24 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::create('reviews', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('book_id')->constrained()->onDelete('cascade');
-            $table->tinyInteger('rating')->unsigned(); // 1-5
-            $table->text('comment')->nullable();
-            $table->enum('status', ['pending','approved','rejected'])->default('pending');
-            $table->timestamps();
-        });
-    }
+    public function up()
+{
+    Schema::create('reviews', function (Blueprint $table) {
+        $table->id();
+        $table->unsignedBigInteger('user_id');   // người viết review
+        $table->unsignedBigInteger('book_id');   // sách được review
+        $table->tinyInteger('rating')->default(0); // số sao 1–5
+        $table->text('comment')->nullable();       // nội dung đánh giá
+        $table->timestamps();
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('reviews');
-    }
+        // Khóa ngoại
+        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        $table->foreign('book_id')->references('id')->on('books')->onDelete('cascade');
+    });
+}
+
 };

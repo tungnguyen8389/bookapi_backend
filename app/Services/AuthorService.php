@@ -6,31 +6,31 @@ use App\Models\Author;
 
 class AuthorService
 {
-    public function getAll()
+    public function getAllAuthors()
     {
-        return Author::with('books')->paginate(10);
+        return Author::all();
     }
 
-    public function getById($id)
+    public function getAuthorById($id)
     {
-        return Author::with('books')->findOrFail($id);
+        return Author::findOrFail($id);
     }
 
-    public function create(array $data)
+    public function createAuthor(array $data)
     {
         return Author::create($data);
     }
 
-    public function update($id, array $data)
+    public function updateAuthor($id, array $data)
     {
         $author = Author::findOrFail($id);
         $author->update($data);
         return $author;
     }
 
-    public function delete($id)
+    public function deleteAuthor($id)
     {
         $author = Author::findOrFail($id);
-        return $author->delete();
+        $author->delete();
     }
 }

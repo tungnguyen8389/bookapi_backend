@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Str;
 
 class Book extends Model
 {
@@ -94,5 +96,14 @@ class Book extends Model
         $discount = $this->discount ?? 0.0;
         $final = $price - $discount;
         return $final > 0 ? round($final, 2) : 0.0;
+    }
+    protected function title(): Attribute
+    {
+        return Attribute::make(
+            set: fn (string $value) => [
+                'title' => $value,
+                'slug' => Str::slug($value),
+            ],
+        );
     }
 }
