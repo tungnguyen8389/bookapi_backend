@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\ReviewService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
@@ -30,7 +31,7 @@ class ReviewController extends Controller
             'comment' => 'nullable|string',
         ]);
 
-        $data['user_id'] = auth()->id();
+        $data['user_id'] = Auth::id();
         $data['book_id'] = $bookId;
 
         $review = $this->reviewService->createReview($data);
