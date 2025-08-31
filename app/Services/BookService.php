@@ -17,16 +17,27 @@ class BookService
     }
 
     public function createBook(array $data)
-    {
-        return Book::create($data);
+{
+    if (request()->hasFile('image')) {
+        $path = request()->file('image')->store('books', 'public'); 
+        $data['image_url'] = $path;
     }
 
+    return Book::create($data);
+}
+
     public function updateBook($id, array $data)
-    {
-        $book = Book::findOrFail($id);
-        $book->update($data);
-        return $book;
+{
+    $book = Book::findOrFail($id);
+
+    if (request()->hasFile('image')) {
+        $path = request()->file('image')->store('books', 'public');
+        $data['image_url'] = $path;
     }
+
+    $book->update($data);
+    return $book;
+}
 
     public function deleteBook($id)
     {

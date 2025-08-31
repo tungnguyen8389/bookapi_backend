@@ -106,4 +106,11 @@ class Book extends Model
             ],
         );
     }
+
+    /* Trả về full URL hình ảnh */
+    protected $appends = ['image_full_url'];
+    public function getImageFullUrlAttribute()
+    {
+        return $this->image_url ? asset('storage/' . $this->image_url) : null;
+    }
 }
