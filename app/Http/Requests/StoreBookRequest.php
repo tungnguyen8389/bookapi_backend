@@ -15,11 +15,11 @@ class StoreBookRequest extends FormRequest
     {
         return [
         'title'         => 'required|string|max:255',
-        'slug'          => 'required|string|max:255|unique:books,slug',
+        // 'slug'          => 'required|string|max:255|unique:books,slug', //Cái này đã code cho tạo tự động
         'price'         => 'required|numeric|min:0',
         'discount'      => 'nullable|numeric|min:0|max:100',
-        'stock'         => 'required|integer|min:0',
-        'status'        => 'required|in:available,out_of_stock',
+        'stock'         => 'nullable|integer|min:0',
+        'status'        => 'nullable|in:available,out_of_stock',
         'description'   => 'nullable|string',
         'image'         => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // đổi từ image_url sang image upload
         'category_id'   => 'required|exists:categories,id',

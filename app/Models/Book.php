@@ -97,6 +97,7 @@ class Book extends Model
         $final = $price - $discount;
         return $final > 0 ? round($final, 2) : 0.0;
     }
+    
     protected function title(): Attribute
     {
         return Attribute::make(
