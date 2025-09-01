@@ -9,12 +9,10 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        $user = $request->user();
-
-        if (! $user || ! in_array($user->role, $roles)) {
-            return response()->json(['message' => 'Không có quyền truy cập'], 403);
+        if (! $request->user() || ! in_array($request->user()->role, $roles)) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
-
         return $next($request);
     }
 }
+

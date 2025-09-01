@@ -43,6 +43,9 @@ class BookController extends Controller
     // Thêm mới
     public function store(StoreBookRequest $request)
     {
+        if ($request->user()->role !== 'admin') {
+        return response()->json(['message' => 'Forbidden'], 403);
+        }
         $book = $this->bookService->createBook($request->validated());
         return response()->json($book, 201);
     }
@@ -60,4 +63,6 @@ class BookController extends Controller
         $this->bookService->deleteBook($id);
         return response()->json(null, 204);
     }
+
+    
 }
