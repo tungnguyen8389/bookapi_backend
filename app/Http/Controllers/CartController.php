@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Services\CartService;
 use Illuminate\Http\Request;
 
@@ -25,7 +23,6 @@ class CartController extends Controller
             'book_id' => 'required|exists:books,id',
             'quantity' => 'nullable|integer|min:1',
         ]);
-
         $cart = $this->cartService->addItem($request->book_id, $request->quantity ?? 1);
 
         return response()->json($cart);
@@ -36,9 +33,7 @@ class CartController extends Controller
         $request->validate([
             'quantity' => 'required|integer|min:0',
         ]);
-
         $cart = $this->cartService->updateItem($itemId, $request->quantity);
-
         return response()->json($cart);
     }
 
