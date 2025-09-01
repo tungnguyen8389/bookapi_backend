@@ -5,21 +5,38 @@ namespace App\Services;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Book;
+use Illuminate\Support\Facades\Auth;
 
 class CartService
 {
-    public function getCartByUser($userId)
+    public function getCart()
     {
-        return Cart::with('items.book')->where('user_id', $userId)->firstOrFail();
+        $cart = \App\Models\Cart::firstOrCreate(['user_id' => Auth::id()]);
+        $cart->load('items.book');
+
+        // có thể trả thẳng $cart (đã có subtotal & items_count)
+        // hoặc kèm summary:
+        return [
+            'cart'    => $cart,
+            'summary' => [
+                'items_count' => $cart->items_count,
+                'subtotal'    => $cart->subtotal,
+            ],
+        ];
     }
 
-    public function addItem($userId, $bookId, $quantity = 1)
+    public function addItem($bookId, $quantity = 1)
     {
-        $cart = Cart::firstOrCreate(['user_id' => $userId]);
+        $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+        $book = Book::findOrFail($bookId);
+
+        if ($book->stock <= 0) {
+            throw new \Exception('Sản phẩm đã hết hàng');
+        }
 
         $item = CartItem::where('cart_id', $cart->id)
-            ->where('book_id', $bookId)
-            ->first();
+                        ->where('book_id', $bookId)
+                        ->first();
 
         if ($item) {
             $item->quantity += $quantity;
@@ -32,39 +49,36 @@ class CartService
             ]);
         }
 
-        return $this->getCartByUser($userId);
+        return $cart->load('items.book');
     }
 
-    public function updateItem($userId, $bookId, $quantity)
+    public function updateItem($itemId, $quantity)
     {
-        $cart = Cart::where('user_id', $userId)->firstOrFail();
+        $item = CartItem::findOrFail($itemId);
 
-        $item = CartItem::where('cart_id', $cart->id)
-            ->where('book_id', $bookId)
-            ->firstOrFail();
+        if ($quantity <= 0) {
+            $item->delete();
+        } else {
+            $item->update(['quantity' => $quantity]);
+        }
 
-        $item->quantity = $quantity;
-        $item->save();
-
-        return $this->getCartByUser($userId);
+        return $item->cart->load('items.book');
     }
 
-    public function removeItem($userId, $bookId)
+    public function removeItem($itemId)
     {
-        $cart = Cart::where('user_id', $userId)->firstOrFail();
+        $item = CartItem::findOrFail($itemId);
+        $cart = $item->cart;
+        $item->delete();
 
-        CartItem::where('cart_id', $cart->id)
-            ->where('book_id', $bookId)
-            ->delete();
-
-        return $this->getCartByUser($userId);
+        return $cart->load('items.book');
     }
 
-    public function clearCart($userId)
+    public function clearCart()
     {
-        $cart = Cart::where('user_id', $userId)->firstOrFail();
+        $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
         $cart->items()->delete();
 
-        return $this->getCartByUser($userId);
+        return $cart;
     }
 }
