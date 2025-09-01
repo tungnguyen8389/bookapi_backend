@@ -4,8 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Cart extends Model
 {
@@ -13,40 +11,48 @@ class Cart extends Model
 
     protected $fillable = [
         'user_id',
+        // nếu có cột status (active/checked_out) thì thêm vào đây
+        // 'status',
     ];
 
-    /**
-     * Cart thuộc về user
-     *
-     * @return BelongsTo
-     */
-    public function user(): BelongsTo
+    // Để tự động hiển thị trong JSON trả về
+    protected $appends = ['subtotal', 'items_count'];
+
+    public function items()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
     /**
-     * Items trong giỏ
-     *
-     * @return HasMany
-     */
-    public function items(): HasMany
-    {
-        return $this->hasMany(CartItem::class);
-    }
-
-    /**
-     * Tổng tiền tạm tính của cart (không bao gồm phí ship)
-     *
-     * @return float
+     * Tổng tiền tạm tính của giỏ hàng = sum(item.unit_price * item.quantity)
+     * Ưu tiên dùng cart_items.price (nếu bảng có cột này), fallback sang book.final_price hoặc book.price
      */
     public function getSubtotalAttribute(): float
     {
+        // đảm bảo đã load book để không bị N+1
+        $items = $this->relationLoaded('items') ? $this->items : $this->items()->with('book')->get();
+
         $sum = 0.0;
-        foreach ($this->items as $item) {
-            $price = $item->book?->final_price ?? $item->book?->price ?? 0;
-            $sum += $price * $item->quantity;
+        foreach ($items as $item) {
+            $unit = $item->unit_price; // accessor từ CartItem (bên dưới)
+            $sum += $unit * (int) $item->quantity;
         }
+
+        // làm tròn 2 số thập phân
         return round($sum, 2);
+    }
+
+    /**
+     * Tổng số lượng (sum quantity)
+     */
+    public function getItemsCountAttribute(): int
+    {
+        $items = $this->relationLoaded('items') ? $this->items : $this->items()->get();
+        return (int) $items->sum('quantity');
     }
 }
