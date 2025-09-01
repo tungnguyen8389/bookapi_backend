@@ -1,9 +1,7 @@
 <?php
-
 namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
 use App\Services\CartService;
+use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
@@ -14,49 +12,40 @@ class CartController extends Controller
         $this->cartService = $cartService;
     }
 
-    public function show($userId)
+    public function index()
     {
-        return response()->json($this->cartService->getCartByUser($userId));
+        return response()->json($this->cartService->getCart());
     }
 
-    public function addItem(Request $request, $userId)
+    public function add(Request $request)
     {
-        $data = $request->validate([
+        $request->validate([
             'book_id' => 'required|exists:books,id',
-            'quantity' => 'sometimes|integer|min:1',
+            'quantity' => 'nullable|integer|min:1',
         ]);
-
-        $cart = $this->cartService->addItem(
-            $userId,
-            $data['book_id'],
-            $data['quantity'] ?? 1
-        );
+        $cart = $this->cartService->addItem($request->book_id, $request->quantity ?? 1);
 
         return response()->json($cart);
     }
 
-    public function updateItem(Request $request, $userId, $bookId)
+    public function update(Request $request, $itemId)
     {
-        $data = $request->validate([
-            'quantity' => 'required|integer|min:1',
+        $request->validate([
+            'quantity' => 'required|integer|min:0',
         ]);
-
-        $cart = $this->cartService->updateItem($userId, $bookId, $data['quantity']);
-
+        $cart = $this->cartService->updateItem($itemId, $request->quantity);
         return response()->json($cart);
     }
 
-    public function removeItem($userId, $bookId)
+    public function remove($itemId)
     {
-        $cart = $this->cartService->removeItem($userId, $bookId);
-
+        $cart = $this->cartService->removeItem($itemId);
         return response()->json($cart);
     }
 
-    public function clear($userId)
+    public function clear()
     {
-        $cart = $this->cartService->clearCart($userId);
-
+        $cart = $this->cartService->clearCart();
         return response()->json($cart);
     }
 }
