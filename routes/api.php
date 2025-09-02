@@ -8,11 +8,17 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Admin\UserController;
 
 // Auth routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+// Admin có thể CRUD bảng user
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+    Route::apiResource('users', UserController::class);
+});
 
 // Guest có thể xem sách, tác giả, thể loại
 Route::get('/books', [BookController::class, 'index']);
