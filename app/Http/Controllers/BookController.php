@@ -28,8 +28,10 @@ class BookController extends Controller
     // Lấy danh sách sách (có phân trang)
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
-        $books = $this->bookService->getAllBooks($perPage);
+        $pageIndex = (int) $request->get('pageIndex', 1);
+        $pageSize = (int) $request->get('pageSize', 10);
+        $categoryId = $request->get('category_id');
+        $books = $this->bookService->getAllBooks($pageSize, $categoryId, $pageIndex);
         return response()->json($books);
     }
 
@@ -44,7 +46,7 @@ class BookController extends Controller
     public function store(StoreBookRequest $request)
     {
         if ($request->user()->role !== 'admin') {
-        return response()->json(['message' => 'Forbidden'], 403);
+            return response()->json(['message' => 'Forbidden'], 403);
         }
         $book = $this->bookService->createBook($request->validated());
         return response()->json($book, 201);
@@ -64,5 +66,5 @@ class BookController extends Controller
         return response()->json(null, 204);
     }
 
-    
+
 }
