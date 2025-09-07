@@ -7,9 +7,13 @@ use Illuminate\Support\Str;
 
 class BookService
 {
-    public function getAllBooks()
+    public function getAllBooks($perPage = 10, $categoryId = null, $page = 1)
     {
-        return Book::all();
+        $query = Book::query();
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     public function getBookById($id)
