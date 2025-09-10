@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Book;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class BookService
 {
@@ -74,5 +75,19 @@ class BookService
     {
         $book = Book::findOrFail($id);
         $book->delete();
+    }
+
+    public function search(string $keyword = null, int $limit = 10)
+    {
+        $query = \App\Models\Book::query();
+
+        if (!empty($keyword)) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'LIKE', '%' . $keyword . '%')
+                  ->orWhere('description', 'LIKE', '%' . $keyword . '%');
+            });
+        }
+
+        return $query->paginate($limit);
     }
 }

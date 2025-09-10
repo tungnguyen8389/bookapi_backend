@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Services\BookService;
+use App\Http\Requests\SearchBookRequest;
 
 class BookController extends Controller
 {
@@ -19,7 +20,7 @@ class BookController extends Controller
 
         // Middleware này sẽ yêu cầu đăng nhập cho mọi phương thức
         // NGOẠI TRỪ 'index' và 'show'
-        $this->middleware('auth:sanctum')->except(['index', 'show']);
+        $this->middleware('auth:sanctum')->except(['index', 'show', 'search']);
 
         // Chỉ admin mới được thêm/sửa/xóa
         $this->middleware('role:admin')->only(['store', 'update', 'destroy']);
@@ -65,6 +66,16 @@ class BookController extends Controller
         $this->bookService->deleteBook($id);
         return response()->json(null, 204);
     }
+
+    public function search(SearchBookRequest $request)
+{
+    $keyword = $request->input('q');
+    $limit   = $request->input('limit', 10);
+
+    $books = $this->bookService->search($keyword, $limit);
+
+    return response()->json($books);
+}
 
 
 }
