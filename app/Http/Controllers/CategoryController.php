@@ -30,6 +30,7 @@ class CategoryController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:categories,slug',
+            'image' => 'required|string|max:255', // URL to the category image
         ]);
         return response()->json($this->categoryService->createCategory($data), 201);
     }
