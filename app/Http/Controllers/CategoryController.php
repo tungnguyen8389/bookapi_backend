@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Models\Category;
 use App\Services\CategoryService;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    protected $categoryService;
+    protected $CategoryService;
 
-    public function __construct(CategoryService $categoryService)
+    public function __construct(CategoryService $CategoryService)
     {
-        $this->categoryService = $categoryService;
+        $this->CategoryService = $CategoryService;
+
         // Middleware này sẽ yêu cầu đăng nhập cho mọi phương thức
         // NGOẠI TRỪ 'index' và 'show'
         $this->middleware('auth:sanctum')->except(['index', 'show']);
@@ -20,38 +23,32 @@ class CategoryController extends Controller
         $this->middleware('role:admin')->only(['store', 'update', 'destroy']);
     }
 
+
     public function index()
     {
-        return response()->json($this->categoryService->getAllCategories());
+        return response()->json(Category::all());
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:categories,slug',
-        ]);
-        return response()->json($this->categoryService->createCategory($data), 201);
+        $category = $this->CategoryService->store($request->validated());
+        return response()->json($category, 201);
     }
 
-    public function show($id)
+    public function show(Category $category)
     {
-        $category = $this->categoryService->getCategoryById($id);
         return response()->json($category);
     }
 
-    public function update(Request $request, $id)
+    public function update(StoreCategoryRequest $request, Category $category)
     {
-        $data = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'slug' => "sometimes|string|max:255|unique:categories,slug,{$id}",
-        ]);
-        return response()->json($this->categoryService->updateCategory($id, $data));
+        $category = $this->CategoryService->update($category, $request->validated());
+        return response()->json($category);
     }
 
-    public function destroy($id)
+    public function destroy(Category $category)
     {
-        $this->categoryService->deleteCategory($id);
-        return response()->json(['message' => 'Category deleted']);
+        $this->CategoryService->delete($category);
+        return response()->json(null, 204);
     }
 }
