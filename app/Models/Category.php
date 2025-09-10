@@ -13,6 +13,7 @@ class Category extends Model
     protected $fillable = [
         'name',
         'slug',
+        'image', // URL to the category image
     ];
 
     /**
