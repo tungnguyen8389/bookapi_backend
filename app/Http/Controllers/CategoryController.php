@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Models\Category;
 use App\Services\CategoryService;
+use Illuminate\Contracts\Cache\Store;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class CategoryController extends Controller
 {
@@ -35,14 +37,16 @@ class CategoryController extends Controller
         return response()->json($category, 201);
     }
 
-    public function show(Category $category)
+    public function show($id)
     {
+        $category = $this->CategoryService->getCategoryById($id);
         return response()->json($category);
     }
 
-    public function update(StoreCategoryRequest $request, Category $category)
+        // Cập nhật
+    public function update(StoreCategoryRequest $request, $id)
     {
-        $category = $this->CategoryService->update($category, $request->validated());
+        $category = $this->CategoryService->update($id, $request->validated());
         return response()->json($category);
     }
 
