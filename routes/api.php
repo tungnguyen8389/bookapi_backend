@@ -68,6 +68,4 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     });
 
 });
-
-
 ?>

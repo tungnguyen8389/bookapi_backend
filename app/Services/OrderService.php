@@ -70,10 +70,41 @@ class OrderService
     }
 
     /**
-     * Lấy tất cả đơn hàng từ database.
+     * Lấy tất cả đơn hàng từ database với pagination, filter theo status và tìm kiếm.
      */
-    public function getAllOrders()
+    public function getAllOrders($perPage = 10, $statusArray = null, $page = 1, $search = null)
     {
-        return Order::all(); // Lấy tất cả các đơn hàng.
+        $query = Order::query();
+
+        // Filter theo array status nếu có
+        if ($statusArray && is_array($statusArray) && count($statusArray) > 0) {
+            $query->whereIn('status', $statusArray);
+        }
+
+        // Tìm kiếm theo order ID, user name, hoặc ngày tạo
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                // Tìm theo order ID
+                $q->where('id', 'LIKE', '%' . $search . '%')
+                    // Tìm theo tên user
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'LIKE', '%' . $search . '%')
+                            ->orWhere('email', 'LIKE', '%' . $search . '%');
+                    })
+                    // Tìm theo ngày tạo (format YYYY-MM-DD)
+                    ->orWhere('created_at', 'LIKE', '%' . $search . '%');
+            });
+        }
+
+        // Sort theo ngày tạo gần nhất lên đầu
+        $query->orderBy('created_at', 'desc');
+
+        // Load tất cả thông tin của orders bao gồm items, books với author và category
+        $query->with([
+            'items.book',
+            'user'
+        ]);
+
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 }

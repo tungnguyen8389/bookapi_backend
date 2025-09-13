@@ -66,15 +66,25 @@ class OrderController extends Controller
     }
 
     /**
-     * Lấy danh sách tất cả đơn hàng cho admin.
+     * Lấy danh sách tất cả đơn hàng cho admin với pagination, filter và tìm kiếm.
      */
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
         if (Auth::user()->role != 'admin') {
             return response()->json(['error' => 'Bạn không có quyền truy cập chức năng này.'], 403);
         }
-        
-        $orders = $this->orderService->getAllOrders();
+
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
+        $statusArray = $request->get('status'); // Có thể là array hoặc string
+        $search = $request->get('search'); // Tìm kiếm theo ID, user name hoặc ngày
+
+        // Nếu status là string thì chuyển thành array
+        if ($statusArray && !is_array($statusArray)) {
+            $statusArray = explode(',', $statusArray);
+        }
+
+        $orders = $this->orderService->getAllOrders($perPage, $statusArray, $page, $search);
         return response()->json($orders);
     }
 
