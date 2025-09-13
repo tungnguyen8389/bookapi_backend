@@ -8,12 +8,24 @@ use Illuminate\Support\Facades\Storage;
 
 class BookService
 {
-    public function getAllBooks($perPage = 10, $categoryId = null, $page = 1)
+    public function getAllBooks($perPage = 10, $categoryId = null, $page = 1, $keyword = null)
     {
         $query = Book::query();
+
         if ($categoryId) {
             $query->where('category_id', $categoryId);
         }
+
+        if (!empty($keyword)) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'LIKE', '%' . $keyword . '%')
+                    ->orWhere('description', 'LIKE', '%' . $keyword . '%');
+            });
+        }
+
+        // Sort theo ngày đăng gần nhất lên đầu
+        $query->orderBy('created_at', 'desc');
+
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
@@ -75,19 +87,5 @@ class BookService
     {
         $book = Book::findOrFail($id);
         $book->delete();
-    }
-
-    public function search(string $keyword = null, int $limit = 10)
-    {
-        $query = \App\Models\Book::query();
-
-        if (!empty($keyword)) {
-            $query->where(function ($q) use ($keyword) {
-                $q->where('title', 'LIKE', '%' . $keyword . '%')
-                  ->orWhere('description', 'LIKE', '%' . $keyword . '%');
-            });
-        }
-
-        return $query->paginate($limit);
     }
 }

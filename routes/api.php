@@ -22,7 +22,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 
 // Guest có thể xem sách, tác giả, thể loại
 Route::get('/books', [BookController::class, 'index']);
-Route::get('books/search', [BookController::class, 'search']);
 Route::get('/books/{id}', [BookController::class, 'show']);
 Route::get('/authors', [AuthorController::class, 'index']);
 Route::get('/authors/{id}', [AuthorController::class, 'show']);
