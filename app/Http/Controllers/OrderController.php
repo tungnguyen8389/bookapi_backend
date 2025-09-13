@@ -42,27 +42,40 @@ class OrderController extends Controller
     }
 
     public function update(Request $request, $id)
-{
-    $order = Order::findOrFail($id);
+    {
+        $order = Order::findOrFail($id);
 
-    // Chỉ admin mới có quyền
-    if (Auth::user()->role != 'admin') {
-        return response()->json(['error' => 'Phải là admin mới cập nhật được đơn hàng'], 403);
+        // Chỉ admin mới có quyền
+        if (Auth::user()->role != 'admin') {
+            return response()->json(['error' => 'Phải là admin mới cập nhật được đơn hàng'], 403);
+        }
+
+        $validated = $request->validate([
+            'status' => 'in:pending,paid,shipped,completed,cancelled',
+            'shipping_status' => 'nullable|string',
+            'payment_method' => 'nullable|string',
+            'shipping_address' => 'nullable|string',
+        ]);
+
+        $order->update($validated);
+
+        return response()->json([
+            'message' => 'Cập nhật đơn hàng thành công',
+            'order' => $order
+        ]);
     }
 
-    $validated = $request->validate([
-        'status' => 'in:pending,paid,shipped,completed,cancelled',
-        'shipping_status' => 'nullable|string',
-        'payment_method' => 'nullable|string',
-        'shipping_address' => 'nullable|string',
-    ]);
-
-    $order->update($validated);
-
-    return response()->json([
-        'message' => 'Cập nhật đơn hàng thành công',
-        'order' => $order
-    ]);
-}
+    /**
+     * Lấy danh sách tất cả đơn hàng cho admin.
+     */
+    public function adminIndex()
+    {
+        if (Auth::user()->role != 'admin') {
+            return response()->json(['error' => 'Bạn không có quyền truy cập chức năng này.'], 403);
+        }
+        
+        $orders = $this->orderService->getAllOrders();
+        return response()->json($orders);
+    }
 
 }

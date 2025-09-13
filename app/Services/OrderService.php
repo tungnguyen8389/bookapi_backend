@@ -68,4 +68,12 @@ class OrderService
             ->with('items.book')
             ->findOrFail($orderId);
     }
+
+    /**
+     * Lấy tất cả đơn hàng từ database.
+     */
+    public function getAllOrders()
+    {
+        return Order::all(); // Lấy tất cả các đơn hàng.
+    }
 }

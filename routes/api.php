@@ -62,6 +62,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::apiResource('books', BookController::class)->except(['index', 'show']);
     Route::apiResource('authors', AuthorController::class)->except(['index']);
     Route::apiResource('categories', CategoryController::class)->except(['index']);
+    Route::apiResource('orders', OrderController::class)->except(['index']);
+
+    Route::prefix('orders')->group(function () {
+        Route::get('/admin/listall', [OrderController::class, 'adminIndex']); // Lấy danh sách tất cả đơn hàng cho admin
+    });
+
 });
 
 
