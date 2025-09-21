@@ -37,18 +37,20 @@ class BookService
 
     public function createBook(array $data)
     {
-        // Nếu có file image upload thì lưu và gán vào image_url
-        if (request()->hasFile('image')) {
-            $path = request()->file('image')->store('books', 'public');
+        // Handle file image upload if present
+        if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
+            $path = $data['image']->store('books', 'public');
             $data['image_url'] = $path;
+            // Remove the image file object from data array
+            unset($data['image']);
         }
 
-        // Nếu chưa có slug thì tự động tạo từ title
+        // Generate slug from title if not provided or empty
         if (!isset($data['slug']) || empty($data['slug'])) {
             $data['slug'] = Str::slug($data['title']);
         }
 
-        // Xử lý status theo stock, nếu rỗng hoặc bằng 0 thì đặt là out_of_stock
+        // Handle status based on stock
         if (!isset($data['stock']) || $data['stock'] <= 0) {
             $data['status'] = 'out_of_stock';
         } else {
@@ -62,18 +64,20 @@ class BookService
     {
         $book = Book::findOrFail($id);
 
-        // Nếu có file image upload thì lưu và gán vào image_url
-        if (request()->hasFile('image')) {
-            $path = request()->file('image')->store('books', 'public');
+        // Handle file image upload if present
+        if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
+            $path = $data['image']->store('books', 'public');
             $data['image_url'] = $path;
+            // Remove the image file object from data array
+            unset($data['image']);
         }
 
-        // Nếu slug chưa có hoặc bị trống thì generate từ title
+        // Generate slug from title if needed
         if (isset($data['title']) && (!isset($data['slug']) || empty($data['slug']))) {
             $data['slug'] = Str::slug($data['title']);
         }
 
-        // Xu ly status
+        // Handle status based on stock
         if (isset($data['stock'])) {
             if ($data['stock'] <= 0) {
                 $data['status'] = 'out_of_stock';
