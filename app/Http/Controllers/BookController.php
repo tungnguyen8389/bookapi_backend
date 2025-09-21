@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Services\BookService;
+use Illuminate\Support\Facades\Log;
 
 class BookController extends Controller
 {
@@ -39,7 +40,7 @@ class BookController extends Controller
 
         // Debug: Log search parameter để kiểm tra
         if ($keyword) {
-            \Log::info('Search keyword received: ' . json_encode($keyword));
+            Log::info('Search keyword received: ' . json_encode($keyword));
         }
 
         $books = $this->bookService->getAllBooks($pageSize, $categoryId, $pageIndex, $keyword);
@@ -76,4 +77,14 @@ class BookController extends Controller
         $this->bookService->deleteBook($id);
         return response()->json(null, 204);
     }
+
+    public function updateWithFiles(UpdateBookRequest $request, $id)
+{
+    $book = $this->bookService->updateBook($id, $request->validated());
+    
+    return response()->json([
+        'message' => 'Book updated successfully',
+        'data' => $book
+    ]);
+}
 }

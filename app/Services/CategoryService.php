@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class CategoryService
 {
@@ -24,12 +25,17 @@ class CategoryService
         // Nếu có file image upload thì lưu và gán vào image_url
         if (request()->hasFile('image')) {
             $path = request()->file('image')->store('categories', 'public');
-            $data['image_url'] = $path;
+            $data['image'] = $path;
         }
 
-        // Nếu slug chưa có hoặc bị trống thì generate từ name
+        // Nếu slug chưa có hoặc bị trống thì generate từ name (nếu name tồn tại)
         if (!isset($data['slug']) || empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['name']);
+            // Chỉ tạo slug nếu name tồn tại và không rỗng,giữ slug cũ
+            if (isset($data['name']) && !empty($data['name'])) {
+                $data['slug'] = Str::slug($data['name']);
+            } else {
+                $data['slug'] = $category->slug; // Giữ slug hiện tại nếu name không có
+            }
         }
 
         $category->update($data);

@@ -68,16 +68,18 @@ class BookService
         }
 
         // Nếu slug chưa có hoặc bị trống thì generate từ title
-        if (!isset($data['slug']) || empty($data['slug'])) {
-            $data['slug'] = Str::slug($data['title']);
-        }
+         if (isset($data['title']) && (!isset($data['slug']) || empty($data['slug']))) {
+        $data['slug'] = Str::slug($data['title']);
+    }
 
         // Xu ly status
-        if (!isset($data['stock']) || $data['stock'] <= 0) {
+        if (isset($data['stock'])) {
+        if ($data['stock'] <= 0) {
             $data['status'] = 'out_of_stock';
         } else {
             $data['status'] = 'available';
         }
+    }
 
         $book->update($data);
         return $book;

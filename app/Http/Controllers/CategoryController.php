@@ -8,6 +8,7 @@ use App\Services\CategoryService;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Http\Requests\UpdateCategoryRequest;
 
 class CategoryController extends Controller
 {
@@ -44,15 +45,26 @@ class CategoryController extends Controller
     }
 
         // Cập nhật
-    public function update(StoreCategoryRequest $request, $id)
+    public function update(UpdateCategoryRequest $request, $id)
     {
         $category = $this->CategoryService->update($id, $request->validated());
         return response()->json($category);
     }
 
+
     public function destroy(Category $category)
     {
         $this->CategoryService->delete($category);
         return response()->json(null, 204);
+    }
+
+    public function updateWithFiles(UpdateCategoryRequest $request, $id)
+    {
+        $category = $this->CategoryService->update($id, $request->validated());
+        
+        return response()->json([
+            'message' => 'Category updated successfully',
+            'data' => $category
+        ]);
     }
 }
