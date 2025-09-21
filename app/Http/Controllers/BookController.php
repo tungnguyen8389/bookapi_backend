@@ -19,8 +19,8 @@ class BookController extends Controller
         $this->bookService = $bookService;
 
         // Middleware này sẽ yêu cầu đăng nhập cho mọi phương thức
-        // NGOẠI TRỪ 'index' và 'show'
-        $this->middleware('auth:sanctum')->except(['index', 'show']);
+        // NGOẠI TRỪ 'index', 'show' và 'mostOrdered'
+        $this->middleware('auth:sanctum')->except(['index', 'show', 'mostOrdered']);
 
         // Chỉ admin mới được thêm/sửa/xóa
         $this->middleware('role:admin')->only(['store', 'update', 'destroy']);
@@ -79,12 +79,36 @@ class BookController extends Controller
     }
 
     public function updateWithFiles(UpdateBookRequest $request, $id)
-{
-    $book = $this->bookService->updateBook($id, $request->validated());
-    
-    return response()->json([
-        'message' => 'Book updated successfully',
-        'data' => $book
-    ]);
-}
+    {
+        $book = $this->bookService->updateBook($id, $request->validated());
+
+        return response()->json([
+            'message' => 'Book updated successfully',
+            'data' => $book
+        ]);
+    }
+
+    /**
+     * Get the most ordered books
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function mostOrdered(Request $request)
+    {
+        $limit = (int) $request->get('limit', 10);
+
+        // Validate limit parameter
+        if ($limit <= 0 || $limit > 50) {
+            $limit = 10;
+        }
+
+        $books = $this->bookService->getMostOrderedBooks($limit);
+
+        return response()->json([
+            'message' => 'Most ordered books retrieved successfully',
+            'data' => $books,
+            'total' => $books->count()
+        ]);
+    }
 }
